@@ -100,7 +100,8 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
   output -> height = input -> height;
   unsigned int h = input -> height - 1;
   unsigned int w = input -> width - 1;
-  int t, k, r, a, b, c, d;
+  int t, k, r;
+  unsigned int a, b, c, d;
   int filt[3][3];
   unsigned int div = filter -> getDivisor();
 
@@ -111,6 +112,7 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
   }
 
   if (filt[1][0] == 0 && filt[1][1] == 0 && filt[1][2] == 0) {
+  for(int plane = 0; plane < 3; plane++) {
   for(int row = h-1; row != 0 ; row--) {
     a = row-1;
     for(int col = w-1; col != 0 ; col--) {
@@ -122,18 +124,10 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
 
 	for (int j = 0; j < 3; j++) {
           c = b+j;
-	  t += (input -> color[0][a][c] 
-		 * filt[0][j] );
-          k += (input -> color[1][a][c] 
-        	 * filt[0][j] );
-          r += (input -> color[2][a][c] 
-		 * filt[0][j] );
-          t += (input -> color[0][a+2][c] 
-		 * filt[2][j] );
-          k += (input -> color[1][a+2][c] 
-		 * filt[2][j] );
-          r += (input -> color[2][a+2][c] 
-		 * filt[2][j] );
+	  t += (input -> color[plane][a][c] 
+		 * filt[0][j] )
+                 + (input -> color[plane][a+2][c] 
+	         * filt[2][j] );
 	}
 
 	if ( t < 0 ) {
@@ -155,32 +149,27 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
 	  r = 255;
 	}
 
-      output -> color[0][row][col] = t;
-      output -> color[1][row][col] = k;
-      output -> color[2][row][col] = r;
+      output -> color[plane][row][col] = t;
     }
   }
   }
+}
 
   else if (div == 1) {
+  for(int plane = 0; plane < 3; plane++) {
   for(int row = h-1; row != 0 ; row--) {
     a = row-1;
     for(int col = w-1; col != 0 ; col--) {
         b = col-1;  
 
 	t = 0;
-        k = 0;
-        r = 0;
 
-	for (int j = 0; j < 3; j++) {
-          c = b+j;
-	  for (int i = 0; i < 3; i++) {	
-            d = a+i;
-	    t += (input -> color[0][d][c] 
-		 * filt[i][j] );
-            k += (input -> color[1][d][c] 
-		 * filt[i][j] );
-            r += (input -> color[2][d][c] 
+        for (int i = 0; i < 3; i++) {	
+          d = a+i;
+	  for (int j = 0; j < 3; j++) {
+            c = b+j;
+	  
+	    t += (input -> color[plane][d][c] 
 		 * filt[i][j] );
 	  }
 	}
@@ -188,30 +177,19 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
 	if ( t < 0 ) {
 	  t = 0;
 	}
-        if ( k < 0 ) {
-	  k = 0;
-	}
-        if ( r < 0 ) {
-	  r = 0;
-	}
+
 	if ( t  > 255 ) { 
 	  t = 255;
-	}
-        if ( k  > 255 ) { 
-	  k = 255;
-	}
-        if ( r  > 255 ) { 
-	  r = 255;
-	}
+        }
 
-      output -> color[0][row][col] = t;
-      output -> color[1][row][col] = k;
-      output -> color[2][row][col] = r;
+      output -> color[plane][row][col] = t;
     }
   }
   }
+}
 
   else {
+  for(int plane = 0; plane < 3; plane++) {
   for(int row = h-1; row != 0 ; row--) {
     a = row-1;
     for(int col = w-1; col != 0 ; col--) {
@@ -225,11 +203,7 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
           c = b+j;
 	  for (int i = 0; i < 3; i++) {	
             d = a+i;
-	    t += (input -> color[0][d][c] 
-		 * filt[i][j] );
-            k += (input -> color[1][d][c] 
-		 * filt[i][j] );
-            r += (input -> color[2][d][c] 
+	    t += (input -> color[plane][d][c] 
 		 * filt[i][j] );
 	  }
 	}
@@ -257,10 +231,9 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
 	  r = 255;
 	}
 
-      output -> color[0][row][col] = t;
-      output -> color[1][row][col] = k;
-      output -> color[2][row][col] = r;
+      output -> color[plane][row][col] = t;
     }
+  }
   }
   }
   cycStop = rdtscll();

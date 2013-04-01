@@ -2,7 +2,7 @@
 ##
 
 CXX	=g++
-CXXFLAGS= -m32 -static -funroll-loops -Ofast -msse2
+CXXFLAGS= -m32 -static -funroll-loops -O3 -msse2
 
 goals: judge
 	echo "Done"
