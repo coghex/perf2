@@ -143,6 +143,40 @@ applyFilter(struct Filter *filter, cs1300bmp *input, cs1300bmp *output)
   }
 }
 
+  else if (filt[0][0] == 1 && filt[0][1] == 1 && filt[0][2] == 1 &&
+           filt[1][0] == 1 && filt[1][1] == 1 && filt[1][2] == 1 &&
+           filt[2][0] == 1 && filt[2][1] == 1 && filt[2][2] == 1) {
+   for(int plane = 0; plane < 3; plane++) {
+   for(int row = h-1; row != 0 ; row--) {
+    a = row-1;
+    for(int col = w-1; col != 0 ; col--) {
+        b = col-1;  
+
+	t = 0;
+
+        for (int i = 0; i < 3; i++) {	
+          d = a+i;
+	  for (int j = 0; j < 3; j++) {	  
+	    t += (input -> color[plane][d][b+j]);
+	  }
+	}
+
+        t /= div;
+
+	if ( t < 0 ) {
+	  t = 0;
+	}
+
+	if ( t  > 255 ) { 
+	  t = 255;
+        }
+
+      output -> color[plane][row][col] = t;
+    }
+  }
+  }
+}
+
   else if (div == 1) {
   for(int plane = 0; plane < 3; plane++) {
   for(int row = h-1; row != 0 ; row--) {
